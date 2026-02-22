@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GOJO TECH</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:Arial,sans-serif;}
+body{background:#0f172a;color:white;padding:20px;}
+
+/* Header */
+header{padding:15px;text-align:center;background:#1e293b;border-bottom:2px solid #00e676;}
+header h1{color:#00e676;font-size:20px;margin-bottom:4px;}
+header h4{color:#60ff9d;font-size:16px;margin-bottom:8px;}
+.lang-switch{margin-top:8px;}
+.lang-switch button{margin:0 4px;padding:6px 10px;border:none;border-radius:6px;background:#3b82f6;color:white;cursor:pointer;transition:0.3s;}
+.lang-switch button:hover{background:#60a5fa;transform:scale(1.05);}
+
+/* Users Grid */
+.users-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+  gap:15px;
+  margin-top:20px;
+}
+.user-card{
+  background:#1e293b;
+  border-radius:12px;
+  padding:12px;
+  text-align:center;
+  transition: transform 0.3s, box-shadow 0.3s;
+  position: relative;
+  box-shadow:0 0 10px rgba(0,255,128,0.2);
+}
+.user-card:hover{
+  transform:scale(1.03);
+  box-shadow:0 0 20px rgba(0,255,128,0.5);
+}
+.user-card img{
+  width:50px;
+  height:50px;
+  border-radius:50%;
+  border:2px solid #00e676;
+  margin-bottom:8px;
+}
+.user-card h3{color:#00e676;font-size:14px;margin-bottom:4px;}
+.user-card p{font-size:12px;margin-bottom:4px;}
+.user-card button{
+  display:inline-block;
+  margin:5px 3px;
+  padding:6px 10px;
+  background:linear-gradient(135deg,#3b82f6,#60a5fa);
+  color:white;
+  border-radius:8px;
+  font-weight:bold;
+  cursor:pointer;
+  border:none;
+  transition: all 0.3s;
+  box-shadow:0 0 8px #00ff80;
+}
+.user-card button:hover{
+  transform:scale(1.05);
+  box-shadow:0 0 18px #00ff80;
+}
+.star-animation{
+  display:inline-block;
+  animation: popStar 0.5s ease-in-out;
+}
+@keyframes popStar{
+  0%{transform: scale(1);}
+  50%{transform: scale(1.5);}
+  100%{transform: scale(1);}
+}
+
+/* Leaderboard */
+.leaderboard{
+  margin-top:30px;
+  background:#1e293b;
+  border-radius:12px;
+  padding:15px;
+}
+.leaderboard h2{color:#00e676;margin-bottom:10px;text-align:center;}
+.leaderboard ul{list-style:none;}
+.leaderboard li{padding:8px;border-bottom:1px solid #111827;display:flex;justify-content:space-between;align-items:center;}
+
+/* Modals */
+.modal{
+  position:fixed;top:0;left:0;width:100%;height:100%;
+  background:rgba(0,0,0,0.7);
+  display:flex;justify-content:center;align-items:center;
+  opacity:0;visibility:hidden;transform:translateY(-50px);
+  transition:0.4s;
+  z-index:9999;
+}
+.modal.show{opacity:1;visibility:visible;transform:translateY(0);}
+.modal-content{
+  background:linear-gradient(135deg,#0f172a,#1e293b);
+  padding:25px;border-radius:16px;width:90%;max-width:400px;text-align:center;
+  box-shadow:0 0 20px #00ff80;
+}
+.modal-content input{width:90%;padding:8px;margin:10px 0;border-radius:8px;border:none;}
+.modal-content button{
+  margin-top:10px;padding:10px;border:none;border-radius:8px;background:#3b82f6;color:white;cursor:pointer;
+  transition: all 0.3s;
+}
+.modal-content button:hover{transform:scale(1.05);box-shadow:0 0 15px #00ff80;}
+
+/* Footer */
+footer{text-align:center;margin-top:20px;font-size:14px;color:#fff;}
+footer a{color:#00e676;text-decoration:none;}
+footer a:hover{text-decoration:underline;}
+</style>
+</head>
+<body>
+
+<header>
+  <h1 id="title">GOJO TECH</h1>
+  <h4>YOU TUBE SUB4SUB</h4>
+  <div class="lang-switch">
+    
+</header>
+
+<div class="users-grid" id="usersGrid"></div>
+
+<div class="leaderboard" id="leaderboard">
+  <h2>Top Rated Users</h2>
+  <ul id="leaderboardList"></ul>
+</div>
+
+<!-- Login modal -->
+<div class="modal" id="loginModal">
+  <div class="modal-content">
+    <h2>Login / Enter Details</h2>
+    <input type="text" id="loginTelegram" placeholder="Telegram Username">
+    <input type="url" id="loginYoutubeLink" placeholder="YouTube Channel Link">
+    <input type="file" id="loginProfileImg" accept="image/*">
+    <button onclick="loginUser()">Submit</button>
+  </div>
+</div>
+
+<!-- Profile Edit Modal -->
+<div class="modal" id="profileModal">
+  <div class="modal-content">
+    <h2>Edit Profile</h2>
+    <input type="text" id="modalTelegram" placeholder="Telegram Username">
+    <input type="url" id="modalYoutubeLink" placeholder="YouTube Link">
+    <input type="file" id="modalImg" accept="image/*">
+    <button onclick="saveProfile()">Save</button>
+  </div>
+</div>
+
+<footer>
+  <p>© 2026 GOJO TECH Portal</p>
+  <p><strong>About Us:</strong> We are a platform built to share GOJO TECH YouTube channels, help users gain ratings based on verified screenshots, and create a trusted community.</p>
+  <p>Made by <a href="https://t.me/b_bek27" target="_blank">@b_bek27</a></p>
+</footer>
+
+<script>
+// Persistent localStorage users
+let users = JSON.parse(localStorage.getItem('gojoUsers')) || [];
+let currentIndex = null;
+
+// Show login modal if user not logged in
+window.onload = () => {
+  const loggedIn = localStorage.getItem('loggedInUser');
+  if(!loggedIn){
+    document.getElementById('loginModal').classList.add('show');
+  } else {
+    renderUsers();
+  }
+};
+
+// Convert screenshots to stars
+function getStars(screenshots){
+  if(screenshots>=75) return "★★★★★";
+  if(screenshots>=60) return "★★★★☆";
+  if(screenshots>=45) return "★★★☆☆";
+  if(screenshots>=30) return "★★☆☆☆";
+  if(screenshots>=15) return "★☆☆☆☆";
+  return "☆☆☆☆☆";
+}
+
+// Save users
+function saveUsers(){localStorage.setItem('gojoUsers', JSON.stringify(users));}
+
+// Login / first-time user
+function loginUser(){
+  const telegram = document.getElementById('loginTelegram').value.trim();
+  const ytLink = document.getElementById('loginYoutubeLink').value.trim();
+  const file = document.getElementById('loginProfileImg').files[0];
+  if(!telegram || !ytLink || !file){alert("All fields required"); return;}
+  const imgUrl = URL.createObjectURL(file);
+  const newUser = {telegram, youtubeLink: ytLink, profileImg: imgUrl, screenshots:0};
+  users.push(newUser);
+  saveUsers();
+  localStorage.setItem('loggedInUser', telegram);
+  document.getElementById('loginModal').classList.remove('show');
+  renderUsers();
+}
+
+// Render users
+function renderUsers(){
+  const grid = document.getElementById('usersGrid');
+  grid.innerHTML = '';
+  users.forEach((user, index)=>{
+    const div = document.createElement('div');
+    div.classList.add('user-card');
+    div.innerHTML = `
+      <img src="${user.profileImg}" alt="Profile">
+      <h3>${user.telegram}</h3>
+      <p>Rate: <span class="star-animation">${getStars(user.screenshots)}</span> (${user.screenshots} screenshots)</p>
+      <button onclick="submitScreenshot(${index})">Submit Screenshot</button>
+      <button onclick="openModal(${index})">Edit Profile</button>
+      <button onclick="subscribeYT('${user.youtubeLink}')">SUBSCRIBE</button>
+    `;
+    grid.appendChild(div);
+  });
+  renderLeaderboard();
+}
+
+// Submit screenshot
+function submitScreenshot(index){
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = 'image/*';
+  input.onchange = (e)=>{
+    if(e.target.files.length>0){
+      users[index].screenshots += 1;
+      alert("Screenshot submitted! Rating updated.");
+      saveUsers();
+      renderUsers();
+    }
+  };
+  input.click();
+}
+
+// Profile modal
+const modal = document.getElementById('profileModal');
+function openModal(index){
+  currentIndex = index;
+  const user = users[index];
+  document.getElementById('modalTelegram').value = user.telegram;
+  document.getElementById('modalYoutubeLink').value = user.youtubeLink || "";
+  modal.classList.add('show');
+}
+function saveProfile(){
+  const telegram = document.getElementById('modalTelegram').value;
+  const link = document.getElementById('modalYoutubeLink').value;
+  const file = document.getElementById('modalImg').files[0];
+  let imgUrl = users[currentIndex].profileImg;
+  if(file) imgUrl = URL.createObjectURL(file);
+  users[currentIndex] = {...users[currentIndex], telegram, youtubeLink: link, profileImg: imgUrl};
+  saveUsers();
+  modal.classList.remove('show');
+  renderUsers();
+}
+
+// Leaderboard
+function renderLeaderboard(){
+  const list = document.getElementById('leaderboardList');
+  const sorted = [...users].sort((a,b)=>b.screenshots - a.screenshots);
+  list.innerHTML = '';
+  sorted.forEach(u=>{
+    const li = document.createElement('li');
+    li.innerHTML = `<strong>${u.telegram}</strong> - ${getStars(u.screenshots)} (${u.screenshots})`;
+    list.appendChild(li);
+  });
+}
+
+// Open YouTube link
+function subscribeYT(link){
+  if(link) window.open(link,'_blank');
+  else alert("No YouTube link available!");
+}
+
+
+</script>
+
+</body>
+</html>
